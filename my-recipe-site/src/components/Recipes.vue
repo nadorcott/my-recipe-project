@@ -4,57 +4,56 @@
 
     <!-- Поиск по названию -->
     <div>
-      <input
-        v-model="searchQuery"
-        placeholder="Search recipes..."
-        @keyup.enter="searchRecipes"
-      />
+      <input v-model="searchQuery" placeholder="Search recipes..." @keyup.enter="searchRecipes" />
       <button @click="searchRecipes">Search</button>
     </div>
 
     <!-- Фильтр по ингредиентам -->
     <div>
       <label for="ingredient">Ingredient:</label>
-      <input
-        type="text"
-        v-model="ingredientQuery"
-        placeholder="Type an ingredient..."
-        @input="fetchIngredientSuggestions"
-        @focus="showSuggestions = true"
-      />
-      <ul
-        v-if="showSuggestions && filteredIngredients.length"
-        class="suggestions"
-      >
-        <li
-          v-for="ingredient in filteredIngredients"
-          :key="ingredient"
-          @click="selectIngredient(ingredient)"
-        >
+      <input type="text" v-model="ingredientQuery" placeholder="Type an ingredient..."
+        @input="fetchIngredientSuggestions" @focus="showSuggestions = true" />
+      <ul v-if="showSuggestions && filteredIngredients.length" class="suggestions">
+        <li v-for="ingredient in filteredIngredients" :key="ingredient" @click="selectIngredient(ingredient)">
           {{ ingredient }}
         </li>
       </ul>
     </div>
+    <div>
+      <label for="category">Category:</label>
+      <input type="text" v-model="categoryQuery" placeholder="Enter category..." @keyup.enter="fetchRecipes" />
+    </div>
 
     <!-- Список рецептов -->
-    <ul v-if="recipes.length">
-      <li v-for="recipe in recipes" :key="recipe.id">
-        <router-link :to="`/recipe/${recipe.id}`">
-          <img
-            :src="
-              recipe.image_url && recipe.image_url.trim()
-                ? recipe.image_url.trim()
-                : 'https://via.placeholder.com/300x200'
-            "
-            alt="Recipe image"
-            @error="imageError($event)"
-          />
-        </router-link>
-        <h3>{{ recipe.title }}</h3>
-      </li>
-    </ul>
+    <div v-if="recipes.length" class="recipe-grid">
+  <div v-for="recipe in recipes" :key="recipe.id" class="recipe-card">
+    <router-link
+  v-for="recipe in recipes"
+  :key="recipe.id"
+  :to="`/recipe/${recipe.id}`"
+  class="recipe-card"
+>
+  <img
+    v-if="recipe.image_url"
+    :src="recipe.image_url.trim()"
+    alt="Recipe image"
+    @error="imageError($event)"
+    loading="lazy"
+  />
+  <img
+    v-else
+    src="https://source.unsplash.com/300x200/?food"
+    alt="Default food image"
+    loading="lazy"
+  />
+  <h3>{{ recipe.title }}</h3>
+  <p class="category">{{ recipe.category }}</p>
+</router-link>
 
-    <p v-else>No recipes found</p>
+</div>
+</div>
+<p v-else>No recipes found</p>
+
   </div>
 </template>
 <script>
@@ -64,6 +63,7 @@ export default {
       recipes: [],
       searchQuery: "", // Поиск по названию (отдельно)
       ingredientQuery: "", // Фильтр по ингредиентам
+      categoryQuery: "", // Фильтр по категории
       allIngredients: [],
       filteredIngredients: [],
       showSuggestions: false,
@@ -97,6 +97,10 @@ export default {
         if (this.ingredientQuery) {
           params.append("ingredient", this.ingredientQuery);
         }
+        if (this.categoryQuery) {
+          params.append("category", this.categoryQuery);
+        }
+
 
         if (params.toString()) {
           url += `?${params.toString()}`;
@@ -113,6 +117,7 @@ export default {
         console.error("Error fetching recipes:", error);
       }
     },
+
     async fetchIngredients() {
       try {
         const response = await fetch(`http://localhost:5000/ingredients`);
@@ -141,31 +146,52 @@ export default {
     },
 
     imageError(event) {
-      event.target.src = "https://via.placeholder.com/300x200";
+      event.target.src = "https://source.unsplash.com/300x200/?food";
+
     },
   },
 };
 </script>
 
 <style scoped>
-/* Стили для автозаполнения */
-.suggestions {
-  position: absolute;
-  background: white;
-  border: 1px solid #ddd;
-  max-height: 200px;
-  overflow-y: auto;
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.recipe-card:hover {
+  transform: translateY(-4px);
+}
+
+.recipe-card {
   list-style: none;
-  padding: 5px;
-  margin: 0;
-}
-
-.suggestions li {
-  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: white;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.suggestions li:hover {
-  background: #f0f0f0;
+.recipe-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin-bottom: 10px;
 }
+
+.recipe-card h3 {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+
+.recipe-card .category {
+  font-size: 0.9em;
+  color: #777;
+}
+
 </style>

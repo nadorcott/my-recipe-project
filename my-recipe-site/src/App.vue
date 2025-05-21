@@ -10,6 +10,11 @@
       <div class="nav-links">
         <router-link to="/home">Home</router-link>
         <router-link to="/recipes">Recipes</router-link>
+        <router-link v-if="isLoggedIn" @click.native="logout" to="#">Logout</router-link>
+        <router-link v-else to="/login">Login</router-link>
+        <router-link v-if="isLoggedIn" to="/add-recipe">Add Recipe</router-link>
+<router-link v-if="isLoggedIn" to="/my-recipes">My Recipes</router-link>
+
       </div>
 
       <!-- Строка поиска -->
@@ -32,13 +37,22 @@ export default {
       searchQuery: "",
     };
   },
+  computed: {
+    isLoggedIn() {
+      return !!localStorage.getItem("token");
+    },
+  },
   methods: {
     updateSearchQuery(query) {
       this.searchQuery = query;
     },
+    logout() {
+      localStorage.removeItem("token");
+    },
   },
 };
 </script>
+
 
 <style>
 nav {
