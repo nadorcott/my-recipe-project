@@ -85,7 +85,7 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        let url = `https://my-recipe-project-backend.onrender.com:10000/recipes`;
+        let url = `https://my-recipe-project-backend.onrender.com/recipes`;
         const params = new URLSearchParams();
 
         if (this.searchQuery) {
@@ -117,7 +117,7 @@ export default {
 
     async fetchIngredients() {
       try {
-        const response = await fetch(`https://my-recipe-project-backend.onrender.com:10000/ingredients`);
+        const response = await fetch(`https://my-recipe-project-backend.onrender.com/ingredients`);
         if (!response.ok) throw new Error("Failed to fetch ingredients");
         this.allIngredients = await response.json();
       } catch (error) {

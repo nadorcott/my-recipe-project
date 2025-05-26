@@ -36,7 +36,7 @@ export default {
 
     onMounted(async () => {
       try {
-        const response = await axios.get("https://my-recipe-project-backend.onrender.com:10000/recipes");
+        const response = await axios.get("https://my-recipe-project-backend.onrender.com/recipes");
         recipes.value = response.data;
       } catch (err) {
         error.value = "Ошибка загрузки рецептов";

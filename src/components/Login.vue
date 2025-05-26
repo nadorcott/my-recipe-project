@@ -20,7 +20,7 @@
     methods: {
       async login() {
         try {
-          const response = await fetch("https://my-recipe-project-backend.onrender.com:10000/login", {
+          const response = await fetch("https://my-recipe-project-backend.onrender.com/login", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -48,7 +48,7 @@ export default {
   async created() {
     const recipeId = this.$route.params.id;
     try {
-      const response = await fetch(`https://my-recipe-project-backend.onrender.com:10000/recipes/${recipeId}`);
+      const response = await fetch(`https://my-recipe-project-backend.onrender.com/recipes/${recipeId}`);
       if (!response.ok) throw new Error("Recipe not found");
       this.recipe = await response.json();
     } catch (error) {
