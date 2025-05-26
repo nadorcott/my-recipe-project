@@ -6,7 +6,7 @@ import AddRecipe from "./components/AddRecipe.vue";
 import Register from "./components/Register.vue";
 import Login from "./components/Login.vue";
 import MyRecipes from "./components/MyRecipes.vue";
-import Register from "./components/Register.vue";
+
 
 const routes = [
   { path: "/register", component: Register },
@@ -17,7 +17,7 @@ const routes = [
   { path: "/home", component: Home }, // ✅ Добавляем этот маршрут
   { path: "/recipes", component: Recipes },
   { path: "/recipe/:id", component: RecipeDetail },
-  { path: "/my-recipes", component: MyRecipes },
+  { path: "/my-recipes", component: MyRecipes }
 ];
 
 const router = createRouter({
