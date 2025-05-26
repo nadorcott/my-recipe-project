@@ -85,7 +85,7 @@ export default {
   methods: {
     async fetchRecipes() {
       try {
-        let url = `postgresql://my_recipe_project_postgres_user:9Wh0cazfCek1SDms2i5K02pr0jLVphYR@dpg-d0q6qgmmcj7s73eqi090-a/my_recipe_project_postgres/recipes`;
+        let url = `https://my-recipe-project-backend.onrender.com:10000/recipes`;
         const params = new URLSearchParams();
 
         if (this.searchQuery) {
@@ -117,7 +117,7 @@ export default {
 
     async fetchIngredients() {
       try {
-        const response = await fetch(`postgresql://my_recipe_project_postgres_user:9Wh0cazfCek1SDms2i5K02pr0jLVphYR@dpg-d0q6qgmmcj7s73eqi090-a/my_recipe_project_postgres/ingredients`);
+        const response = await fetch(`https://my-recipe-project-backend.onrender.com:10000/ingredients`);
         if (!response.ok) throw new Error("Failed to fetch ingredients");
         this.allIngredients = await response.json();
       } catch (error) {
