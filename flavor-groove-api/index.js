@@ -10,6 +10,10 @@ const db = require("./db"); // Подключение к базе данных (
 app.use(cors());
 app.use(bodyParser.json());
 
+app.get("/", async (req, res) => {
+  console.log("Server is working")
+})
+
 app.get("/recipes", async (req, res) => {
   const { search, category, ingredient } = req.query;
   let query = "SELECT * FROM recipes WHERE 1=1"; // Начальный запрос (1=1, чтобы было проще добавлять условия)
