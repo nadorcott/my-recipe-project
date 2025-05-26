@@ -36,7 +36,7 @@ export default {
 
     onMounted(async () => {
       try {
-        const response = await axios.get("http://localhost:5000/recipes");
+        const response = await axios.get("http://localhost:10000/recipes");
         recipes.value = response.data;
       } catch (err) {
         error.value = "Ошибка загрузки рецептов";

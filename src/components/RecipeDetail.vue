@@ -48,7 +48,7 @@ export default {
   async created() {
     const recipeId = this.$route.params.id;
     try {
-      const response = await fetch(`http://localhost:5000/recipes/${recipeId}`);
+      const response = await fetch(`http://localhost:10000/recipes/${recipeId}`);
       if (!response.ok) throw new Error("Recipe not found");
       this.recipe = await response.json();
     } catch (error) {

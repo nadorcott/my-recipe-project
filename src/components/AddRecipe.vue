@@ -61,7 +61,7 @@ export default {
         console.log("Sending token:", token);
 
         const response = await axios.post(
-          "http://localhost:5000/recipes",
+          "http://localhost:10000/recipes",
           {
             title: this.title,
             description: this.description,

@@ -23,7 +23,7 @@
       const token = localStorage.getItem("token");
   
       try {
-        const response = await axios.get("http://localhost:5000/my-recipes", {
+        const response = await axios.get("http://localhost:10000/my-recipes", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
