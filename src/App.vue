@@ -13,6 +13,7 @@
         <router-link v-if="isLoggedIn" @click.native="logout" to="#">Logout</router-link>
         <router-link v-else to="/login">Login</router-link>
         <router-link v-if="isLoggedIn" to="/add-recipe">Add Recipe</router-link>
+        <router-link to="/register">Register</router-link>
 <router-link v-if="isLoggedIn" to="/my-recipes">My Recipes</router-link>
 
       </div>
