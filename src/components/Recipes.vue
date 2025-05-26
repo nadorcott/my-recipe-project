@@ -23,35 +23,32 @@
       <label for="category">Category:</label>
       <input type="text" v-model="categoryQuery" placeholder="Enter category..." @keyup.enter="fetchRecipes" />
     </div>
-
-    <!-- Список рецептов -->
-    <div v-if="recipes.length" class="recipe-grid">
-  <div v-for="recipe in recipes" :key="recipe.id" class="recipe-card">
-    <router-link
-  v-for="recipe in recipes"
-  :key="recipe.id"
-  :to="`/recipe/${recipe.id}`"
-  class="recipe-card"
->
-  <img
-    v-if="recipe.image_url"
-    :src="recipe.image_url.trim()"
-    alt="Recipe image"
-    @error="imageError($event)"
-    loading="lazy"
-  />
-  <img
-    v-else
-    src="https://source.unsplash.com/300x200/?food"
-    alt="Default food image"
-    loading="lazy"
-  />
-  <h3>{{ recipe.title }}</h3>
-  <p class="category">{{ recipe.category }}</p>
-</router-link>
-
+<!-- Список рецептов -->
+<div v-if="recipes.length" class="recipe-grid">
+  <router-link
+    v-for="recipe in recipes"
+    :key="recipe.id"
+    :to="`/recipe/${recipe.id}`"
+    class="recipe-card"
+  >
+    <img
+      v-if="recipe.image_url"
+      :src="recipe.image_url.trim()"
+      alt="Recipe image"
+      @error="imageError($event)"
+      loading="lazy"
+    />
+    <img
+      v-else
+      src="https://source.unsplash.com/300x200/?food"
+      alt="Default food image"
+      loading="lazy"
+    />
+    <h3>{{ recipe.title }}</h3>
+    <p class="category">{{ recipe.category }}</p>
+  </router-link>
 </div>
-</div>
+
 <p v-else>No recipes found</p>
 
   </div>
@@ -166,6 +163,9 @@ export default {
 }
 
 .recipe-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
   list-style: none;
   border: 1px solid #ddd;
   border-radius: 10px;

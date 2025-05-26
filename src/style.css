@@ -98,3 +98,29 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.recipe-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  background: #fff;
+  transition: transform 0.2s ease-in-out;
+  margin: 15px;
+  max-width: 300px;
+}
+
+.recipe-card:hover {
+  transform: scale(1.03);
+}
+
+.recipe-card h3 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.recipe-card p {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 0;
+}
