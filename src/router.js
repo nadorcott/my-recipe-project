@@ -18,7 +18,6 @@ const routes = [
   { path: "/recipes", component: Recipes },
   { path: "/recipe/:id", component: RecipeDetail },
   { path: "/my-recipes", component: MyRecipes },
-  { path: "/register", component: Register },
 ];
 
 const router = createRouter({
