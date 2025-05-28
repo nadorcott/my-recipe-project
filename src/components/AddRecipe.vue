@@ -61,7 +61,7 @@ export default {
         console.log("Sending token:", token);
 
         const response = await axios.post(
-          "https://my-recipe-project-backend.onrender.com",
+          "https://my-recipe-project-backend.onrender.com/recipes",
           {
             title: this.title,
             description: this.description,
