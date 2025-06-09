@@ -1,7 +1,21 @@
 // Получить все рецепты с фильтрами
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "your_secret_key"; // потом вынесем в .env
+const SECRET_KEY = "your_secret_key";
+
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage });
+
+
+
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -9,6 +23,8 @@ const db = require("./db"); // Подключение к базе данных (
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads"));
+
 
 app.get("/recipes", async (req, res) => {
   const { search, category, ingredient } = req.query;
@@ -90,15 +106,17 @@ function authenticateToken(req, res, next) {
     if (err) return res.sendStatus(403);
     req.user = user; // { userId: ... }
     next();
+
   });
 }
 
 
 // Добавить новый рецепт
-app.post("/recipes", authenticateToken, async (req, res) => {
-  const { title, description, ingredients, instructions, image_url, category } = req.body;
-  console.log("Received category:", category);
+app.post("/recipes", authenticateToken, upload.single("image"), async (req, res) => {
 
+  const { title, description, ingredients, instructions, category } = req.body;
+  const image_url = req.file ? `/uploads/${req.file.filename}` : "";
+  console.log("Received category:", category);
   const userId = req.user.userId;
   console.log("▶️ New recipe received:", req.body);
 
@@ -121,9 +139,9 @@ app.post("/recipes", authenticateToken, async (req, res) => {
 });
 
 // Запуск сервера
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// РЕГИСТРАЦИЯ// РЕГИСТРАЦИЯ
+const PORT = process.env.PORT || 5000; app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+});
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 

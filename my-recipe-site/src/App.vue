@@ -81,4 +81,27 @@ nav {
   font-size: 18px;
   font-weight: bold;
 }
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .nav-links a {
+    font-size: 16px;
+  }
+
+  .logo img {
+    max-width: 100px;
+  }
+}
+
 </style>

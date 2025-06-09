@@ -25,10 +25,10 @@
         <textarea v-model="instructions" required></textarea>
       </div>
 
-      <div>
-        <label>Image URL (optional):</label>
-        <input v-model="image_url" />
-      </div>
+<div>
+  <label>Upload Image:</label>
+  <input type="file" @change="handleImageUpload" />
+</div>
 
 
       <button type="submit">Add Recipe</button>
@@ -49,52 +49,50 @@ export default {
       category: "",
       ingredients: "",
       instructions: "",
-      image_url: "",
+      imageFile: null,
       successMessage: "",
       errorMessage: "",
     };
   },
   methods: {
     async submitForm() {
-      try {
-        const token = localStorage.getItem("token");
-        console.log("Sending token:", token);
+  try {
+    const token = localStorage.getItem("token");
 
-        const response = await axios.post(
-          "http://localhost:5000/recipes",
-          {
-            title: this.title,
-            description: this.description,
-            category: this.category,
-            ingredients: this.ingredients,
-            instructions: this.instructions,
-            image_url: this.image_url,
+    const formData = new FormData();
+    formData.append("title", this.title);
+    formData.append("description", this.description);
+    formData.append("category", this.category);
+    formData.append("ingredients", this.ingredients);
+    formData.append("instructions", this.instructions);
+    if (this.imageFile) {
+      formData.append("image", this.imageFile); 
+    }
 
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+    await axios.post("http://localhost:5000/recipes", formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-          }
-        );
-        this.successMessage = "Recipe added!";
-        this.errorMessage = "";
-        this.clearForm();
-      } catch (error) {
-        this.errorMessage = "Failed to add recipe.";
-        this.successMessage = "";
-        console.error(error);
-      }
-    },
+    this.successMessage = "Recipe added!";
+    this.errorMessage = "";
+    this.clearForm();
+  } catch (error) {
+    this.errorMessage = "Failed to add recipe.";
+    this.successMessage = "";
+    console.error(error);
+  }
+},
     clearForm() {
-      this.title = "";
-      this.description = "";
-      this.category = "";
-      this.ingredients = "";
-      this.instructions = "";
-      this.image_url = "";
-    },
+  this.title = "";
+  this.description = "";
+  this.category = "";
+  this.ingredients = "";
+  this.instructions = "";
+  this.imageFile = null;
+},
   },
 };
 </script>

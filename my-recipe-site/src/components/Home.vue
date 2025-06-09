@@ -86,4 +86,22 @@ export default {
   object-fit: cover;
   border-radius: 10px;
 }
+@media (max-width: 768px) {
+  .recipe-list {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .recipe-card {
+    width: 90%; /* Ширина карточки адаптивная */
+    height: auto; /* Позволяет тексту не выходить за рамки */
+  }
+
+  .recipe-card img {
+    height: auto; /* Подстраивается под размер карточки */
+    max-height: 200px;
+  }
+}
+
+
 </style>
