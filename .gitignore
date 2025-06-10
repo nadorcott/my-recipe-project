@@ -1,0 +1,66 @@
+# Node.js dependencies                                                                                                                                                                         
+node_modules/                                                                                                                                                                                  
+npm-debug.log*                                                                                                                                                                                 
+yarn-debug.log*                                                                                                                                                                                
+yarn-error.log*                                                                                                                                                                                
+pnpm-debug.log*                                                                                                                                                                                
+lerna-debug.log*                                                                                                                                                                               
+                                                                                                                                                                                               
+# Environment variables                                                                                                                                                                        
+.env                                                                                                                                                                                           
+.env.local                                                                                                                                                                                     
+.env.*.local                                                                                                                                                                                   
+.env.development.local                                                                                                                                                                         
+.env.test.local                                                                                                                                                                                
+.env.production.local                                                                                                                                                                          
+                                                                                                                                                                                               
+# Uploaded files (local development only)                                                                                                                                                      
+# IMPORTANT: These files are ephemeral on cloud hosting like Render.                                                                                                                           
+# For production, use cloud storage (AWS S3, Cloudinary, etc.).                                                                                                                                
+uploads/                                                                                                                                                                                       
+                                                                                                                                                                                               
+# Logs                                                                                                                                                                                         
+logs/                                                                                                                                                                                          
+*.log                                                                                                                                                                                          
+                                                                                                                                                                                               
+# Build artifacts                                                                                                                                                                              
+dist/                                                                                                                                                                                          
+build/                                                                                                                                                                                         
+.cache/                                                                                                                                                                                        
+                                                                                                                                                                                               
+# Editor and IDE files                                                                                                                                                                         
+.vscode/                                                                                                                                                                                       
+.idea/                                                                                                                                                                                         
+*.sublime-project                                                                                                                                                                              
+*.sublime-workspace                                                                                                                                                                            
+*.swp                                                                                                                                                                                          
+.DS_Store                                                                                                                                                                                      
+Thumbs.db                                                                                                                                                                                      
+.vs/ # Visual Studio temporary files                                                                                                                                                           
+                                                                                                                                                                                               
+# AI Assistant files                                                                                                                                                                           
+.aider.chat.history.md                                                                                                                                                                         
+.aider.input.history                                                                                                                                                                           
+.aider.tags.cache.v4/                                                                                                                                                                          
+.gemini_key.md                                                                                                                                                                                 
+                                                                                                                                                                                               
+# Test coverage reports                                                                                                                                                                        
+coverage/                                                                                                                                                                                      
+.nyc_output/                                                                                                                                                                                   
+                                                                                                                                                                                               
+# Database specific files (if any local DB files are generated)                                                                                                                                
+*.sqlite                                                                                                                                                                                       
+*.sqlite3                                                                                                                                                                                      
+*.db                                                                                                                                                                                           
+*.sql                                                                                                                                                                                          
+                                                                                                                                                                                               
+# Other common temporary files                                                                                                                                                                 
+*.tmp                                                                                                                                                                                          
+*.bak                                                                                                                                                                                          
+*.orig                                                                                                                                                                                         
+                                                                                                                                                                                               
+# Specific ignores for sub-projects (if needed, though general ones above often cover)                                                                                                         
+# my-recipe-site/node_modules/ # Covered by global node_modules/                                                                                                                               
+# my-recipe-site/dist/        # Covered by global dist/                                                                                                                                        
+# flavor-groove-api/node_modules/ # Covered by global node_modules/                                                                                                                            
+# flavor-groove-api/uploads/    # Covered by global uploads/       

@@ -26,10 +26,17 @@ app.use(bodyParser.json());
 app.use("/uploads", express.static("uploads"));
 
 
+app.get("/", async (req, res) => {
+  console.log("Server is working")
+})
+
 app.get("/recipes", async (req, res) => {
+  console.log("/recipes");
+
   const { search, category, ingredient } = req.query;
   let query = "SELECT * FROM recipes WHERE 1=1"; // Начальный запрос (1=1, чтобы было проще добавлять условия)
   let values = [];
+
 
   if (search) {
     query += " AND (title ILIKE $1 OR ingredients ILIKE $1)";
@@ -59,6 +66,7 @@ app.get("/recipes", async (req, res) => {
 
 // Получить рецепт по ID
 app.get("/recipes/:id", async (req, res) => {
+  console.log("/recipes:id");
   const { id } = req.params;
 
   try {
@@ -85,6 +93,7 @@ app.get("/recipes/:id", async (req, res) => {
 
 // Получить все уникальные ингредиенты
 app.get("/ingredients", async (req, res) => {
+  console.log("/ingredients");
   try {
     const ingredients = await db.any(
       "SELECT DISTINCT UNNEST(string_to_array(ingredients, ', ')) AS ingredient FROM recipes"
@@ -98,6 +107,7 @@ app.get("/ingredients", async (req, res) => {
 
 
 function authenticateToken(req, res, next) {
+  console.log("/authenticateToken");
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (!token) return res.sendStatus(401);
@@ -112,7 +122,14 @@ function authenticateToken(req, res, next) {
 
 
 // Добавить новый рецепт
+<<<<<<< HEAD
 app.post("/recipes", authenticateToken, upload.single("image"), async (req, res) => {
+=======
+app.post("/recipes", authenticateToken, async (req, res) => {
+  console.log("/recipes(post)");
+  const { title, description, ingredients, instructions, image_url, category } = req.body;
+  console.log("Received category:", category);
+>>>>>>> ae97efb11792f25d88a10f6c450993665447918f
 
   const { title, description, ingredients, instructions, category } = req.body;
   const image_url = req.file ? `/uploads/${req.file.filename}` : "";
@@ -139,10 +156,17 @@ app.post("/recipes", authenticateToken, upload.single("image"), async (req, res)
 });
 
 // Запуск сервера
+<<<<<<< HEAD
 const PORT = process.env.PORT || 5000; app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+=======
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// РЕГИСТРАЦИЯ// РЕГИСТРАЦИЯ
+>>>>>>> ae97efb11792f25d88a10f6c450993665447918f
 app.post('/register', async (req, res) => {
+  console.log("/register");
   const { name, email, password } = req.body;
 
   try {
@@ -159,6 +183,7 @@ app.post('/register', async (req, res) => {
 
 // ВХОД
 app.post('/login', async (req, res) => {
+  console.log("/login");
   const { email, password } = req.body;
 
   try {
@@ -179,6 +204,7 @@ app.post('/login', async (req, res) => {
   }
 });
 app.get("/my-recipes", authenticateToken, async (req, res) => {
+  console.log("/my-recipes");
   const userId = req.user.userId;
 
   try {
