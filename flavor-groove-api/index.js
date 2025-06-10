@@ -1,7 +1,7 @@
-// Получить все рецепты с фильтрами
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = "your_secret_key";
+const bcrypt = require("bcryptjs"); // Added for password hashing                                                                                                                              
+const SECRET_KEY = process.env.JWT_SECRET; // Changed to use environment variable                                                                                                              
 
 const multer = require("multer");
 const path = require("path");
@@ -14,29 +14,27 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-
-
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const db = require("./db"); // Подключение к базе данных (убедись, что `db.js` настроен правильно)
+const db = require("./db"); // Подключение к базе данных                                                                                                                                       
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/uploads", express.static("uploads"));
-
+app.use("/uploads", express.static("uploads")); // Keep for local testing, but remember ephemeral storage for deployment                                                                       
 
 app.get("/", async (req, res) => {
-  console.log("Server is working")
-})
+  console.log("Server is working");
+  res.send("API is running!"); // Added a response for clarity                                                                                                                                 
+});
 
+// Получить все рецепты с фильтрами                                                                                                                                                            
 app.get("/recipes", async (req, res) => {
   console.log("/recipes");
 
   const { search, category, ingredient } = req.query;
-  let query = "SELECT * FROM recipes WHERE 1=1"; // Начальный запрос (1=1, чтобы было проще добавлять условия)
+  let query = "SELECT * FROM recipes WHERE 1=1";
   let values = [];
-
 
   if (search) {
     query += " AND (title ILIKE $1 OR ingredients ILIKE $1)";
@@ -64,16 +62,16 @@ app.get("/recipes", async (req, res) => {
   }
 });
 
-// Получить рецепт по ID
+// Получить рецепт по ID                                                                                                                                                                       
 app.get("/recipes/:id", async (req, res) => {
   console.log("/recipes:id");
   const { id } = req.params;
 
   try {
     const recipe = await db.oneOrNone(
-      `SELECT recipes.*, users.name AS author_name
-       FROM recipes
-       JOIN users ON recipes.user_id = users.id
+      `SELECT recipes.*, users.name AS author_name                                                                                                                                             
+       FROM recipes                                                                                                                                                                            
+       JOIN users ON recipes.user_id = users.id                                                                                                                                                
        WHERE recipes.id = $1`,
       [id]
     );
@@ -86,25 +84,22 @@ app.get("/recipes/:id", async (req, res) => {
   } catch (error) {
     console.error("Error fetching recipe:", error);
     res.status(500).json({ error: "Internal server error" });
-
   }
 });
 
-
-// Получить все уникальные ингредиенты
+// Получить все уникальные ингредиенты                                                                                                                                                         
 app.get("/ingredients", async (req, res) => {
   console.log("/ingredients");
   try {
     const ingredients = await db.any(
       "SELECT DISTINCT UNNEST(string_to_array(ingredients, ', ')) AS ingredient FROM recipes"
     );
-    res.json(ingredients.map((ing) => ing.ingredient)); // Отправляем массив строк
+    res.json(ingredients.map((ing) => ing.ingredient));
   } catch (error) {
-    console.error("Error fetching recipe:", error);
+    console.error("Error fetching ingredients:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 function authenticateToken(req, res, next) {
   console.log("/authenticateToken");
@@ -114,25 +109,16 @@ function authenticateToken(req, res, next) {
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
     if (err) return res.sendStatus(403);
-    req.user = user; // { userId: ... }
+    req.user = user; // { userId: ... }                                                                                                                                                        
     next();
-
   });
 }
 
-
-// Добавить новый рецепт
-<<<<<<< HEAD
+// Добавить новый рецепт                                                                                                                                                                       
 app.post("/recipes", authenticateToken, upload.single("image"), async (req, res) => {
-=======
-app.post("/recipes", authenticateToken, async (req, res) => {
   console.log("/recipes(post)");
-  const { title, description, ingredients, instructions, image_url, category } = req.body;
-  console.log("Received category:", category);
->>>>>>> ae97efb11792f25d88a10f6c450993665447918f
-
   const { title, description, ingredients, instructions, category } = req.body;
-  const image_url = req.file ? `/uploads/${req.file.filename}` : "";
+  const image_url = req.file ? `/uploads/${req.file.filename}` : ""; // Uses multer for local file path                                                                                        
   console.log("Received category:", category);
   const userId = req.user.userId;
   console.log("▶️ New recipe received:", req.body);
@@ -155,24 +141,18 @@ app.post("/recipes", authenticateToken, async (req, res) => {
   }
 });
 
-// Запуск сервера
-<<<<<<< HEAD
-const PORT = process.env.PORT || 5000; app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
-});
-=======
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-// РЕГИСТРАЦИЯ// РЕГИСТРАЦИЯ
->>>>>>> ae97efb11792f25d88a10f6c450993665447918f
+// РЕГИСТРАЦИЯ                                                                                                                                                                                 
 app.post('/register', async (req, res) => {
   console.log("/register");
   const { name, email, password } = req.body;
 
   try {
+    // Hash the password before storing it                                                                                                                                                     
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is a good number of salt rounds                                                                                              
+
     const newUser = await db.one(
       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *',
-      [name, email, password]
+      [name, email, hashedPassword] // Store the hashed password                                                                                                                               
     );
     res.status(201).json(newUser);
   } catch (err) {
@@ -181,21 +161,24 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// ВХОД
+// ВХОД                                                                                                                                                                                        
 app.post('/login', async (req, res) => {
   console.log("/login");
   const { email, password } = req.body;
 
   try {
+    // Fetch user by email only                                                                                                                                                                
     const user = await db.oneOrNone(
-      'SELECT * FROM users WHERE email = $1 AND password = $2',
-      [email, password]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
 
-    if (user) {
+    // If user exists, compare the provided password with the stored hash                                                                                                                      
+    if (user && await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: "1h" });
-      res.json({ message: 'Login successful', token }); // ← отправляем токен!
+      res.json({ message: 'Login successful', token });
     } else {
+      // If user not found or password doesn't match                                                                                                                                           
       res.status(401).json({ error: 'Invalid credentials' });
     }
   } catch (err) {
@@ -203,6 +186,7 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Login failed' });
   }
 });
+
 app.get("/my-recipes", authenticateToken, async (req, res) => {
   console.log("/my-recipes");
   const userId = req.user.userId;
@@ -218,3 +202,9 @@ app.get("/my-recipes", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Failed to load recipes" });
   }
 });
+
+// Запуск сервера                                                                                                                                                                              
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+});                                                                    
