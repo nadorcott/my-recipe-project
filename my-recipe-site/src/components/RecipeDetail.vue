@@ -25,6 +25,10 @@
     <h3>Published</h3>
     <p>{{ formattedDate }}</p>
 
+    <div v-if="isAuthor">
+      <button @click="deleteRecipe" class="delete-button">Delete Recipe</button>
+    </div>
+
     <p v-if="recipe.instructions">{{ recipe.instructions }}</p>
     <p v-else>No instructions available.</p>
   </div>
@@ -32,10 +36,14 @@
 </template>
 
 <script>
+import axios from 'axios'; // Make sure axios is imported                                                                                                                                   
+import { jwtDecode } from 'jwt-decode'; // Import jwtDecode                                                                                                                                 
+
 export default {
   data() {
     return {
       recipe: null,
+      userId: null, // New: To store the logged-in user's ID                                                                                                                                
     };
   },
 
@@ -44,41 +52,103 @@ export default {
       if (!this.recipe || !this.recipe.created_at) return "";
       return new Date(this.recipe.created_at).toLocaleDateString();
     },
+    isAuthor() {
+      // New: Check if recipe exists, user is logged in, and user ID matches recipe's user_id                                                                                               
+      return this.recipe && this.userId && this.recipe.user_id === this.userId;
+    }
   },
   async created() {
     const recipeId = this.$route.params.id;
     try {
-      const response = await fetch(`http://localhost:5000/recipes/${recipeId}`);
-      if (!response.ok) throw new Error("Recipe not found");
-      this.recipe = await response.json();
+      // Use axios for fetching recipe for consistency and error handling                                                                                                                   
+      const response = await axios.get(`http://localhost:5000/recipes/${recipeId}`);
+      this.recipe = response.data;
+
+      // Decode token to get logged-in user's ID                                                                                                                                            
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          const decodedToken = jwtDecode(token);
+          this.userId = decodedToken.userId;
+        } catch (decodeError) {
+          console.error("Error decoding token:", decodeError);
+          this.userId = null; // Clear userId if token is invalid                                                                                                                           
+        }
+      }
+
     } catch (error) {
       console.error("Error fetching recipe:", error);
+      // Handle 404 or other errors, e.g., redirect to a not-found page                                                                                                                     
+      if (error.response && error.response.status === 404) {
+        this.$router.push('/recipes'); // Redirect to the general recipes list                                                                                                              
+      }
     }
   },
-};
+  methods: {
+    // This method is for the "Edit" button, which you can add later if you wish.                                                                                                           
+    // I'm including it here as a placeholder if you decide to add it.                                                                                                                      
+    editRecipe() {
+      // This route would need to be defined in your router.js                                                                                                                              
+      // this.$router.push(`/recipe/edit/${this.recipe.id}`);                                                                                                                               
+      alert("Edit functionality not yet implemented. You can add it later!");
+    },
+    async deleteRecipe() {
+      // Confirmation dialog before deleting                                                                                                                                                
+      if (confirm("Are you sure you want to delete this recipe? This action cannot be undone.")) {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            alert("You must be logged in to delete a recipe.");
+            return;
+          }
 
+          // Send DELETE request to the backend                                                                                                                                             
+          await axios.delete(`http://localhost:5000/recipes/${this.recipe.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`, // Include the authorization token                                                                                                          
+            },
+          });
+
+          alert("Recipe deleted successfully!");
+          // Redirect to 'My Recipes' or 'Home' page after successful deletion                                                                                                              
+          this.$router.push("/my-recipes");
+        } catch (error) {
+          console.error("Error deleting recipe:", error);
+          if (error.response) {
+            // Server responded with an error (e.g., 403 Forbidden, 404 Not Found)                                                                                                          
+            alert(`Failed to delete recipe: ${error.response.data.error || error.response.statusText}`);
+          } else if (error.request) {
+            // Request was made but no response was received                                                                                                                                
+            alert("Failed to delete recipe. No response from server.");
+          } else {
+            // Something else happened in setting up the request                                                                                                                            
+            alert("Failed to delete recipe. Network error or client-side issue.");
+          }
+        }
+      }
+    }
+  }
+};
 </script>
 
 <style>
-.recipe-image {
-  width: 100%;
-  max-width: 400px;
-  height: auto;
-  display: block;
-  margin: 0 auto 20px;
-  border-radius: 10px;
-}
+/* Your existing styles */
 
-.ingredients-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.ingredient-item {
+.delete-button {
+  background-color: #f44336;
+  /* Red color for delete */
+  color: white;
   padding: 10px 15px;
-  background: #f4f4f4;
-  border-radius: 5px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  /* Add some spacing from content above */
+}
+
+.delete-button:hover {
+  background-color: #d32f2f;
+  /* Darker red on hover */
 }
 </style>

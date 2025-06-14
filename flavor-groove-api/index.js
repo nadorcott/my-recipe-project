@@ -1,4 +1,6 @@
+require('dotenv').config();
 const express = require("express");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs"); // Added for password hashing                                                                                                                              
 const SECRET_KEY = process.env.JWT_SECRET; // Changed to use environment variable                                                                                                              
@@ -6,22 +8,25 @@ const SECRET_KEY = process.env.JWT_SECRET; // Changed to use environment variabl
 const multer = require("multer");
 const path = require("path");
 
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() }); // Store file in memory as a buffer
 
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const db = require("./db"); // Подключение к базе данных                                                                                                                                       
 
+const cloudinary = require('cloudinary').v2;
+// Ensure dotenv is loaded early to access process.env variables                                                                                                                         
+require('dotenv').config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 app.use(cors());
 app.use(bodyParser.json());
-app.use("/uploads", express.static("uploads")); // Keep for local testing, but remember ephemeral storage for deployment                                                                       
 
 app.get("/", async (req, res) => {
   console.log("Server is working");
@@ -105,23 +110,66 @@ function authenticateToken(req, res, next) {
   console.log("/authenticateToken");
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  if (!token) return res.sendStatus(401);
+
+  // ADD THIS LOG: Check if token is received                                                                                                                                                  
+  console.log("Backend: Token received in auth middleware:", token ? "Present" : "Missing");
+  // ADD THIS LOG: Check SECRET_KEY value (for debugging, remove in production)                                                                                                                
+  console.log("Backend: JWT_SECRET value:", SECRET_KEY ? "Defined" : "Undefined/Null");
+
+
+  if (!token) {
+    console.log("Backend: Authentication failed - No token provided.");
+    return res.sendStatus(401); // Unauthorized                                                                                                                                                
+  }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(403);
+    // ADD THIS LOG: Check if the callback is entered                                                                                                                                          
+    console.log("Backend: jwt.verify callback entered.");
+    if (err) {
+      console.error("Backend: Authentication failed - Token verification error:", err.message); // Log the error message                                                                       
+      console.error("Backend: Token verification error stack:", err.stack); // Log the stack trace                                                                                             
+      return res.sendStatus(403); // Forbidden (invalid token)                                                                                                                                 
+    }
     req.user = user; // { userId: ... }                                                                                                                                                        
+    console.log("Backend: Authentication successful for user ID:", user.userId);
     next();
   });
 }
 
-// Добавить новый рецепт                                                                                                                                                                       
+// Добавить новый рецепт 
+
 app.post("/recipes", authenticateToken, upload.single("image"), async (req, res) => {
+
   console.log("/recipes(post)");
+  // ADD THIS LOG:                                                                                                                                                                             
+  console.log("Backend: req.file (from Multer):", req.file);
+
   const { title, description, ingredients, instructions, category } = req.body;
-  const image_url = req.file ? `/uploads/${req.file.filename}` : ""; // Uses multer for local file path                                                                                        
+  let imageUrl = "";
+
+  if (req.file) {
+    try {
+      // Upload image to Cloudinary                                                                                                                                                            
+      const result = await cloudinary.uploader.upload(`data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`, {
+        folder: "flavor_groove_recipes",
+        resource_type: "auto"
+      });
+      imageUrl = result.secure_url;
+      // ADD THIS LOG:                                                                                                                                                                         
+      console.log("Backend: Cloudinary upload successful. Image URL:", imageUrl);
+    } catch (uploadError) {
+      console.error("Backend: Error uploading to Cloudinary:", uploadError.message); // Log message                                                                                            
+      console.error("Backend: Cloudinary error stack:", uploadError.stack); // Log stack trace                                                                                                 
+      return res.status(500).json({ error: "Image upload failed" });
+    }
+  } else {
+    // ADD THIS LOG:                                                                                                                                                                           
+    console.log("Backend: No image file received (req.file is undefined).");
+  }
+
   console.log("Received category:", category);
   const userId = req.user.userId;
-  console.log("▶️ New recipe received:", req.body);
+  console.log("▶️ New recipe received (req.body):", req.body);
 
   if (!title || !description || !ingredients || !instructions) {
     return res
@@ -132,14 +180,18 @@ app.post("/recipes", authenticateToken, upload.single("image"), async (req, res)
   try {
     const newRecipe = await db.one(
       "INSERT INTO recipes (title, description, ingredients, instructions, image_url, category, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [title, description, ingredients, instructions, image_url || "", category || "", userId]
+      [title, description, ingredients, instructions, imageUrl || "", category || "", userId]
     );
+    // ADD THIS LOG:                                                                                                                                                                           
+    console.log("Backend: Recipe successfully added to DB:", newRecipe);
     res.status(201).json(newRecipe);
   } catch (error) {
-    console.error("Error adding recipe:", error);
+    console.error("Backend: Error adding recipe to DB:", error.message); // Log message                                                                                                        
+    console.error("Backend: Database error stack:", error.stack); // Log stack trace                                                                                                           
     res.status(500).json({ error: "Database error" });
   }
 });
+
 
 // РЕГИСТРАЦИЯ                                                                                                                                                                                 
 app.post('/register', async (req, res) => {
@@ -161,6 +213,35 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// Delete a recipe                                                                                                                                                                             
+app.delete("/recipes/:id", authenticateToken, async (req, res) => {
+  console.log("/recipes(delete)");
+  const { id } = req.params;
+  const userId = req.user.userId; // User ID from the authenticated token                                                                                                                      
+
+  try {
+    // First, fetch the existing recipe to check ownership                                                                                                                                     
+    const existingRecipe = await db.oneOrNone("SELECT user_id FROM recipes WHERE id = $1", [id]);
+
+    if (!existingRecipe) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    // Authorization check: Only the owner can delete the recipe                                                                                                                               
+    if (existingRecipe.user_id !== userId) {
+      return res.status(403).json({ error: "You are not authorized to delete this recipe." });
+    }
+
+    // If authorized, proceed with deletion                                                                                                                                                    
+    await db.none("DELETE FROM recipes WHERE id = $1", [id]);
+    console.log(`Backend: Recipe with ID ${id} successfully deleted.`);
+    res.status(204).send(); // 204 No Content is standard for successful DELETE with no response body                                                                                          
+  } catch (error) {
+    console.error("Backend: Error deleting recipe:", error.message);
+    console.error("Backend: Database error stack:", error.stack);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 // ВХОД                                                                                                                                                                                        
 app.post('/login', async (req, res) => {
   console.log("/login");
