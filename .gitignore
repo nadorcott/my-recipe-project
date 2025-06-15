@@ -64,3 +64,4 @@ coverage/
 # my-recipe-site/dist/        # Covered by global dist/                                                                                                                                        
 # flavor-groove-api/node_modules/ # Covered by global node_modules/                                                                                                                            
 # flavor-groove-api/uploads/    # Covered by global uploads/       
+.aider*
